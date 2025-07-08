@@ -9,27 +9,25 @@ import {
 } from "@/components/ui/sidebar"
 
 
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { columns, schema } from "@/components/coloumn"
 import { z } from "zod"
+import { AuthContext } from "@/context/myContext"
+
 export default function Page() {
-
+const { userId } = useContext<any>(AuthContext)
 const [data, setData] = useState<z.infer<typeof schema>[]>([])
-
+const apiUrl = import.meta.env.VITE_API_URL;
   useEffect(() => {
     async function fetchApi() {
-      const stats = await fetch("http://localhost:3000/dashboard/from")
+      const stats = await fetch(`${apiUrl}/getformbyuserid?userId=${userId}`)
       const parsedStats = await stats.json()
-      console.log(parsedStats)
-      setData(parsedStats.map((ele:any, id:any) => ({
-        UserId:ele._id,
+      console.log("Table Data: ",parsedStats)
+      setData(parsedStats.forms.map((ele:any, id:any) => ({
+        formId:ele._id,
         id: id + 1,                         
-        email: ele.email || "N/A",         
-        mainSkill: ele.mainSkill || "N/A",
-        isDeveloper: ele.isDeveloper || "Unknown",
-        gender: ele.gender || "N/A",
-        age: String(ele.age || "N/A"),     
-        name: ele.name || "Anonymous"
+        title: ele.title || "N/A",         
+        description: ele.description || "N/A",
       })));
     }
     fetchApi()

@@ -28,7 +28,7 @@ export default function FieldBlock({ index, control, register, remove, errors }:
   });
 
   return (
-    <div className="bg-white p-6 rounded-md border-l-8 border-[#101828] space-y-4">
+    <div className="bg-white p-6 rounded-md border-l-12 border-[#101828] space-y-4 shadow-2xl">
       <h3 className="text-xl font-semibold">Field {index + 1}</h3>
 
       {/* Label */}
@@ -46,7 +46,6 @@ export default function FieldBlock({ index, control, register, remove, errors }:
         <label>Type</label>
         <select {...register(`fields.${index}.type`)} className="border px-3 py-2 rounded w-full">
           <option value="text">Text</option>
-          <option value="email">Email</option>
           <option value="number">Number</option>
           <option value="textarea">Textarea</option>
           <option value="select">Select</option>

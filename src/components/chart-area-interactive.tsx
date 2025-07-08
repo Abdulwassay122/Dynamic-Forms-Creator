@@ -29,13 +29,14 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/ui/toggle-group"
+import { AuthContext } from "@/context/myContext"
 
 export const description = "An interactive area chart"
 type VisitorData = {
   date: string;
-  male: number;
-  female: number;
+  [formTitle: string]: string | number; // date is string, counts are numbers
 }
+
 // const chartData = [
 //   { date: "2024-04-01", desktop: 222, mobile: 150 },
 //   { date: "2024-04-02", desktop: 97, mobile: 180 },
@@ -145,7 +146,8 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export function ChartAreaInteractive() {
-
+  const apiUrl = import.meta.env.VITE_API_URL;
+  const { userId } = React.useContext<any>(AuthContext)
   const [chartData, setChartData] = React.useState<VisitorData[] | undefined>();
 
   const isMobile = useIsMobile()
@@ -153,26 +155,64 @@ export function ChartAreaInteractive() {
 
   React.useEffect(() => {
     async function fetchApi() {
-      const vissitors = await fetch("http://localhost:3000/dashboard/from/dailyvisitors")
-      const parsed = await vissitors.json()
-      console.log("dddd", parsed)
-      setChartData(parsed.map((ele: any) => ({
-        date: ele.date,
-        male: ele.males,
-        female: ele.females,
-      })));
-      const newVisitors = [
-        {date:"2025-07-2", male:3, female:2},
-        {date:"2025-07-3", male:5, female:2},
-        {date:"2025-07-4", male:3, female:9},
-        {date:"2025-07-5", male:6, female:2},
-        {date:"2025-07-6", male:3, female:2},
+      const dataRes = await fetch(`${apiUrl}/getformbyuserid?userId=${userId}`)
+      const parsedData = await dataRes.json();
+      const slicedForms = parsedData.forms.slice(-3)
+
+      const responseCounts = await Promise.all(
+        slicedForms.map(async (form: any) => {
+          const res = await fetch(`${apiUrl}/submitform?formId=${form._id}`)
+          const resData = await res.json();
+          return {
+            formId: form._id,
+            title: form.title,
+            responses: resData.forms || []
+          }
+        })
+      )
+
+      const formDateMap: Record<string, Record<string, number>> = {};
+
+      responseCounts.forEach((formData) => {
+        const title = formData.title;
+        formData.responses.forEach((res: any) => {
+          const date = new Date(res.createdAt).toISOString().split("T")[0];
+          if (!formDateMap[date]) {
+            formDateMap[date] = {};
+          }
+          formDateMap[date][title] = (formDateMap[date][title] || 0) + 1;
+        });
+      });
+
+      // Fill missing counts with 0
+      const allDates = Object.keys(formDateMap).sort();
+      const formTitles = responseCounts.map(f => f.title);
+
+      const combinedChartData: VisitorData[] = allDates.map(date => {
+        const entry: VisitorData = { date };
+        formTitles.forEach(title => {
+          entry[title] = formDateMap[date][title] || 0;
+        });
+        return entry;
+      });
+
+      setChartData(combinedChartData);
+      const New = [
+        { date: "2025-07-01", "Trial": 0, "job application from": 5, "Test Form": 8 },
+        { date: "2025-07-02", "Trial": 2, "job application from": 7, "Test Form": 1 },
+        { date: "2025-07-03", "Trial": 3, "job application from": 4, "Test Form": 6 },
+        { date: "2025-07-04", "Trial": 2, "job application from": 2, "Test Form": 15 },
+        { date: "2025-07-05", "Trial": 6, "job application from": 6, "Test Form": 1 },
+        { date: "2025-07-09", "Trial": 7, "job application from": 3, "Test Form": 5 },
       ]
-      setChartData(prev => [...prev ?? [], ...newVisitors]);
+      setChartData(prev => [...(prev ?? []), ...New])
     }
-    fetchApi()
-  }, [])
-  console.log("Chatt data ",chartData)
+
+    fetchApi();
+  }, []);
+
+
+  console.log("Chatt data ", chartData)
   React.useEffect(() => {
     if (isMobile) {
       setTimeRange("7d")
@@ -299,20 +339,19 @@ export function ChartAreaInteractive() {
                 />
               }
             />
-            <Area
-              dataKey="male"
-              type="natural"
-              fill="url(#fillMobile)"
-              stroke="var(--color-mobile)"
-              stackId="a"
-            />
-            <Area
-              dataKey="female"
-              type="natural"
-              fill="url(#fillDesktop)"
-              stroke="var(--color-desktop)"
-              stackId="a"
-            />
+            {chartData && chartData.length > 0 &&
+              Object.keys(chartData[0])
+                .filter((key) => key !== "date")
+                .map((key) => (
+                  <Area
+                    key={key}
+                    dataKey={key}
+                    type="natural"
+                    fill="url(#fillDesktop)"
+                    stroke="var(--color-desktop)"
+                    stackId="a"
+                  />
+                ))}
           </AreaChart>
         </ChartContainer>
       </CardContent>

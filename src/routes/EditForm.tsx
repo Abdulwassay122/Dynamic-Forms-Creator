@@ -15,6 +15,7 @@ type FormValues = {
 
 
 export default function EditForm() {
+    const apiUrl = import.meta.env.VITE_API_URL;
     const navigate = useNavigate()
     const {
         register,
@@ -33,7 +34,7 @@ export default function EditForm() {
     console.log("id",_id)
     useEffect(() => {
         async function countClick() {
-            const click = await fetch(`http://localhost:3000/dashboard/from/id?_id=${_id}`)
+            const click = await fetch(`${apiUrl}/dashboard/from/id?_id=${_id}`)
             const parsedData = await click.json()
             setUserData(parsedData[0])
             console.log("clg pased",parsedData)
@@ -51,7 +52,7 @@ export default function EditForm() {
         console.log("Form Data:", data)
         try {
 
-            const upload = await fetch("http://localhost:3000/dashboard/from", {
+            const upload = await fetch(`${apiUrl}/dashboard/from`, {
                 method: "PATCH",
                 headers: {
                     'Content-Type': 'application/json'
@@ -75,7 +76,7 @@ export default function EditForm() {
 
     return (
         <section className="px-48 py-20 flex flex-col gap-10 bg-gray-100">
-            <h1 className="text-3xl font-semibold text-left px-10 py-10  bg-white rounded-md border-t-8 border-[#101828]">Application Form</h1>
+            <h1 className="text-3xl font-semibold text-left px-10 py-10  bg-white rounded-md border-t-12 border-[#101828]">Application Form</h1>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div className="px-10 py-10  bg-white rounded-md border-l-8 border-[#101828]">
                     <label className="block mb-1">Full Name</label>
@@ -89,7 +90,7 @@ export default function EditForm() {
                     {errors.name && <p className="text-red-500">{errors.name.message}</p>}
                 </div>
 
-                <div className="px-10 py-10  bg-white rounded-md border-l-8 border-[#101828]">
+                <div className="px-10 py-10  bg-white rounded-md border-l-12 border-[#101828]">
                     <label className="block mb-1">Email</label>
                     <input
                         defaultValue={userData?.email}

@@ -10,4 +10,12 @@ export default defineConfig({
     '@': path.resolve(__dirname, './src'),
   },
   },
+  optimizeDeps: {
+    include: ['jquery', 'select2'],
+  },
+  build: {
+    commonjsOptions: {
+      include: [/jquery/, /select2/],
+    },
+  },
 })

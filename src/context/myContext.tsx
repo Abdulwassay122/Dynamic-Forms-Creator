@@ -7,6 +7,9 @@ interface AuthContextType {
   setFormFilled: Dispatch<SetStateAction<boolean>>;
   userId:string
   setUserId:Dispatch<SetStateAction<string>>
+  user:object
+  setUser:Dispatch<SetStateAction<object>>
+
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,6 +32,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const stored = sessionStorage.getItem("userId")
     return stored ?? ''
   })
+  const [user, setUser] = useState<object>(()=>{
+    const stored = sessionStorage.getItem("user")
+    return stored ? JSON.parse(stored) : {};
+  })
   // Save to sessionStorage whenever `logined` changes
   useEffect(() => {
     sessionStorage.setItem("logined", logined.toString());
@@ -39,8 +46,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(()=>{
     sessionStorage.setItem("userId", userId)
   }, [userId])
+  useEffect(()=>{
+    sessionStorage.setItem("user", JSON.stringify(user))
+  }, [user])
   return (
-    <AuthContext.Provider value={{ logined, setLogined, formFilled, setFormFilled, userId, setUserId }}>
+    <AuthContext.Provider value={{ logined, setLogined, formFilled, setFormFilled, userId, setUserId, user, setUser }}>
       {children}
     </AuthContext.Provider>
   );

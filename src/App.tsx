@@ -6,11 +6,18 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import PrivateRoute from './PrivateRoute'
 import Login from './routes/Login'
 import Dashboard from './routes/DashBoard'
-import Form from './routes/Form'
-import EditForm from './routes/EditForm'
 import CreateForm from './routes/CreateForm'
-
+import ViewForm from './routes/ViewForm'
+import FormResponses from './routes/FormResponses'
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import EditFormResponse from './routes/EditFormResponse'
+import ViewAllResponses from './routes/ViewAllResponses'
+import SeeFormResponse from './routes/SeeFromResponse'
+import Thanks from './routes/Thanks'
 function App() {
+        const apiUrl = import.meta.env.VITE_API_URL;
+        console.log('API URL:', apiUrl);
   return (
     <>
     <AuthProvider>
@@ -27,15 +34,15 @@ function App() {
             }
           />
           <Route
-            path="/form"
+            path="/editformresponse"
             element={
-                <Form/>
+                <EditFormResponse/>
             }
           />
           <Route
-            path="/editform"
+            path="/seeformresponse"
             element={
-                <EditForm/>
+                <SeeFormResponse/>
             }
           />
           <Route
@@ -44,9 +51,34 @@ function App() {
                 <CreateForm/>
             }
           />
+          <Route
+            path="/viewform"
+            element={
+                <ViewForm/>
+            }
+          />
+          <Route
+            path="/formresponses"
+            element={
+                <FormResponses/>
+            }
+          />
+          <Route
+            path="/viewallforms"
+            element={
+                <ViewAllResponses/>
+            }
+          />
+          <Route
+            path="/thanks"
+            element={
+                <Thanks/>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
+    <ToastContainer/>
     </>
   )
 }
