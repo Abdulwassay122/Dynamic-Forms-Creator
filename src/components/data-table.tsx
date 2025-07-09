@@ -5,6 +5,7 @@ import {
   getCoreRowModel,
   flexRender,
   ColumnDef,
+  getPaginationRowModel,
 } from "@tanstack/react-table"
 
 import {
@@ -27,6 +28,14 @@ import {
   MenubarTrigger,
 } from "@/components/ui/menubar"
 import { Delete } from 'lucide-react'
+import { useState } from "react"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface DataTableProps<TData extends { formId: string }> {
   columns: ColumnDef<TData>[]
@@ -39,11 +48,21 @@ export function DataTable<TData extends { formId: string }>({
 }: DataTableProps<TData>) {
   const navigate = useNavigate()
   const apiUrl = import.meta.env.VITE_SITE_URL;
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
 
   const table = useReactTable({
     data,
     columns,
+    pageCount: Math.ceil(data.length / pagination.pageSize),
+    state: {
+      pagination,
+    },
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
   })
 
   const handleEdit = (userId: string) => {
@@ -177,7 +196,7 @@ export function DataTable<TData extends { formId: string }>({
                     <Menubar className="bg-transparent border-none shadow-none">
                       <MenubarMenu>
                         <MenubarTrigger
-                        style={{ all: "unset" }}
+                          style={{ all: "unset" }}
                           className="p-0 m-0 h-auto w-auto bg-transparent border-none shadow-none focus:outline-none focus:ring-0 hover:bg-transparent data-[state=open]:bg-transparent"
                         >
                           <Ellipsis className="rotate-90" />
@@ -212,6 +231,31 @@ export function DataTable<TData extends { formId: string }>({
           </TableBody>
         </Table>
       </div>
+      {/* Pagination  */}
+      <Pagination>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              onClick={() => table.previousPage()}
+              className={!table.getCanPreviousPage() ? "pointer-events-none opacity-50 cursor-pointer" : "cursor-pointer"}
+            />
+          </PaginationItem>
+
+          <PaginationItem>
+            <span className="text-sm px-4 py-2">
+              Page {table.getState().pagination.pageIndex + 1} of{" "}
+              {table.getPageCount()}
+            </span>
+          </PaginationItem>
+
+          <PaginationItem>
+            <PaginationNext
+              onClick={() => table.nextPage()}
+              className={!table.getCanNextPage() ? "pointer-events-none opacity-50 cursor-pointer" : "cursor-pointer"}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
     </div>
   )
 }

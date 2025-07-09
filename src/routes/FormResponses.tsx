@@ -15,6 +15,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { useLocation, useNavigate } from "react-router-dom"
 import { useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -54,12 +61,17 @@ export default function FormResponses() {
   const [formData, setFormData] = useState<FormData | null>(null)
   const [responseData, setResponseData] = useState<ResponseEntry[]>([])
   const [loading, setLoading] = useState<boolean>(true)
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 3,
+  });
   function useQuery() {
     return new URLSearchParams(useLocation().search)
   }
 
   const query = useQuery()
   const formId = query.get("formId")
+
 
   useEffect(() => {
     async function fetchApi() {
@@ -85,9 +97,9 @@ export default function FormResponses() {
   const tableData = useMemo(() => {
     if (!formData) return []
 
-    return responseData.map((entry:any) => {
+    return responseData.map((entry: any) => {
       const row: Record<string, string> = {}
-      entry.answer.forEach((ans:any) => {
+      entry.answer.forEach((ans: any) => {
         row[ans.fieldId] = ans.value
       })
       row["_id"] = entry._id
@@ -96,6 +108,7 @@ export default function FormResponses() {
     })
   }, [responseData, formData])
 
+  console.log(formData)
 
   const columns = useMemo<ColumnDef<Record<string, string>>[]>(() => {
     if (!formData) return []
@@ -107,7 +120,7 @@ export default function FormResponses() {
         cell: ({ row }) => row.index + 1,
       },
       {
-        accessorKey: "email", 
+        accessorKey: "email",
         header: "Email",
         cell: ({ row }: any) => row.getValue("email") || "—",
       },
@@ -126,9 +139,15 @@ export default function FormResponses() {
   const table = useReactTable({
     data: tableData,
     columns,
+    pageCount: Math.ceil(tableData.length / pagination.pageSize),
+    state: {
+      pagination,
+    },
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-  })
+  });
+
   function handleClick() {
     navigate(`/viewform?formId=${formId}`)
   }
@@ -137,13 +156,13 @@ export default function FormResponses() {
   }
 
   return (
-    <div className="flex flex-col gap-8 px-20 py-10">
+    <div className="flex flex-col gap-8 py-10 md:px-20 sm:px-10 px-5">
       {loading && <div className=" flex justify-center items-center h-screen"><img src={spinner} alt="" /></div>}
       {!loading && <><div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-bold">
+        <h1 className="md:text-2xl sm:text-xl font-bold">
           Form Title: <span className="font-semibold">{formData?.title}</span>
         </h1>
-        <h1 className="text-2xl font-bold">
+        <h1 className="md:text-2xl sm:text-xl font-bold">
           Form Description:{" "}
           <span className="font-semibold">
             {formData?.description?.length ? formData.description : "N/A"}
@@ -207,8 +226,33 @@ export default function FormResponses() {
                 </TableBody>
               </Table>
             </div>
-          </div>
+          </div>  
         </div></>}
+      <Pagination>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              onClick={() => table.previousPage()}
+              className={!table.getCanPreviousPage() ? "pointer-events-none opacity-50 cursor-pointer" : "cursor-pointer"}
+            />
+          </PaginationItem>
+
+          <PaginationItem>
+            <span className="text-sm px-4 py-2">
+              Page {table.getState().pagination.pageIndex + 1} of{" "}
+              {table.getPageCount()}
+            </span>
+          </PaginationItem>
+
+          <PaginationItem>
+            <PaginationNext
+              onClick={() => table.nextPage()}
+              className={!table.getCanNextPage() ? "pointer-events-none opacity-50 cursor-pointer" : "cursor-pointer"}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+
     </div>
   )
 }

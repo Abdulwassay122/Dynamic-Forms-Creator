@@ -128,16 +128,16 @@ export default function ViewForm() {
     }
 
     return (
-        <section className="px-48 py-20 flex flex-col gap-10 bg-gray-100">
+        <section className="font lg:px-60 md:px-20 sm:px-10 px-5 py-20 flex flex-col gap-10 bg-gray-100 bg-gradient-l-r from-gray-100 to-gray-200 ">
             {loading && <div className=" flex justify-center items-center h-screen"><img src={spinner} alt="" /></div>}
 
-            {!loading && FormData?.fields.length ? <><div className="px-10 py-10 flex  flex-col gap-4 bg-white rounded-md border-t-12 border-[#101828] shadow-2xl">
+            {!loading && FormData?.fields.length ? <><div className="px-10 py-10 flex  flex-col gap-4 bg-white rounded-md border-t-12 border-[#101828] shadow-lg ">
                 <h1 className="text-3xl font-semibold text-left capitalize">{FormData?.title}</h1>
                 <p className="capitalize">{FormData?.description}</p>
             </div>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="px-10 py-10 bg-white rounded-md border-l-12 border-[#101828] shadow-2xl">
-                        <label className="block mb-1">Email</label>
+                    <div className="px-10 py-10 bg-white rounded-md border-l-12 border-[#101828] shadow-lg">
+                        <label className="block mb-1">Email  <span className="text-red-600">*</span></label>
                         <input
                             type="email"
                             {...register("email", {
@@ -153,9 +153,9 @@ export default function ViewForm() {
                             <p className="text-red-500 mt-1">{`Email is required`}</p>
                         )}
                     </div>
+                    <div className="px-10 py-10 bg-white rounded-md border-l-12 border-[#101828] shadow-lg flex flex-col gap-10">
                     {FormData?.fields.map((ele: any, id: number) => (
-                        <div key={id} className="px-10 py-10 bg-white rounded-md border-l-12 border-[#101828] shadow-2xl">
-                            <label className="block mb-1 capitalize">{ele.label}</label>
+                            <div className=""><label key={id} className="block mb-1 capitalize">{id+1}. {ele.label} <span className="text-red-600">*</span></label>
 
                             {ele.type === "text" && (
                                 <input
@@ -231,8 +231,9 @@ export default function ViewForm() {
                             {(errors as any)[ele.id] && (
                                 <p className="text-red-500 mt-1"><span className="capitalize">{ele.label}</span> {` is required`}</p>
                             )}
+                            </div>
+                        ))}
                         </div>
-                    ))}
 
 
                     <button type="submit" className="bg-black hover:bg-[#111111] text-[white] px-4 py-2 rounded">

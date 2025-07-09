@@ -98,7 +98,7 @@ export default function CreateForm() {
     };
 
     return (
-        <section className="px-48 py-20 flex flex-col gap-10 bg-gray-100">
+        <section className="lg:px-48 md:px-20 sm:px-10 px-5 py-20 flex flex-col gap-10 bg-gray-100">
             <h1 className="shadow-2xl text-3xl font-semibold  px-10 py-10  bg-white rounded-md border-t-12 border-[#101828]">Create a New Form</h1>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

@@ -27,11 +27,11 @@ export default function ViewAllResponses() {
     const [loading, setLoading] = useState<boolean>(true)
     const [input, setInput] = useState<string[]>([]);
     const [filteredFormData, setFilteredFormData] = useState<any[]>([]);
-    const [currentPage, setCurrentPage] = useState(1);
     const [Error, setError] = useState<boolean>(false);
+    const [currentPage, setCurrentPage] = useState(1);
 
     // fro pagination  
-    const itemsPerPage = 5;
+    const itemsPerPage = 10;
     const flatResponses = filteredFormData.flatMap((form: any) =>
         form.responses.map((response: any, idx: number) => ({
             ...response,
@@ -113,7 +113,7 @@ export default function ViewAllResponses() {
     }
 
     return (
-        <div className="px-10 py-10 flex flex-col gap-10">
+        <div className="sm:px-10 sm:py-10 py-2 px-2 flex flex-col gap-10">
             <div className="relative flex items-center">
                 <Select
                     isMulti

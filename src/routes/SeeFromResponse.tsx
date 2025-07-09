@@ -65,7 +65,7 @@ export default function SeeFormResponse() {
 
 
     return (
-        <section className="px-48 py-20 flex flex-col gap-10 bg-gray-100">
+        <section className="lg:px-48 md:px-20 sm:px-10 px-5 py-20 flex flex-col gap-10 bg-gray-100">
             {loading && <div className=" flex justify-center items-center h-screen"><img src={spinner} alt="" /></div>}
 
             {!loading && FormData ? <><div className="shadow-2xl px-10 py-10 flex  flex-col gap-4 bg-white rounded-md border-t-12 border-[#101828]">
