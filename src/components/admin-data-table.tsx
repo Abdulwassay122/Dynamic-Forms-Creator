@@ -16,7 +16,7 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table"
-import { Copy, Ellipsis } from 'lucide-react'
+import { Ellipsis } from 'lucide-react'
 import { useNavigate } from "react-router-dom"
 import { Button } from "./ui/button"
 import { toast } from 'react-toastify';
@@ -28,7 +28,7 @@ import {
   MenubarTrigger,
 } from "@/components/ui/menubar"
 import { Delete } from 'lucide-react'
-import { useContext, useState } from "react"
+import { useEffect, useState } from "react"
 import {
   Pagination,
   PaginationContent,
@@ -36,48 +36,78 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { AuthContext } from "@/context/myContext"
 
-interface DataTableProps<TData extends { formId: string }> {
-  columns: ColumnDef<TData>[]
-  data: TData[]
-}
 
-export function DataTable<TData extends { formId: string }>({
-  columns,
-  data,
-}: DataTableProps<TData>) {
+import { z } from "zod"
 
-  const { user } = useContext<any>(AuthContext)
-  const isAdmin = user.role === "admin"
+const schema = z.object({
+  userId: z.string(), // MongoDB ID
+  name: z.string(),
+  email: z.string(),
+  gender: z.string(),
+  role: z.string(),
+});
+
+type User = z.infer<typeof schema>;
+
+
+const columns: ColumnDef<User>[] = [
+  {
+    id: "index",
+    header: "#",
+    cell: ({ row }) => row.index + 1,
+  },
+  { accessorKey: "name", header: "Name" },
+  { accessorKey: "email", header: "Email" },
+  { accessorKey: "gender", header: "Gender" },
+  { accessorKey: "role", header: "Role" },
+];
+
+
+
+export function AdminDataTable() {
+
   const navigate = useNavigate()
-  const siteUrl = import.meta.env.VITE_SITE_URL;
   const apiUrl = import.meta.env.VITE_API_URL;
+  //data states 
+  const [tableData, setTableData] = useState<any>()
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
   });
 
+  useEffect(() => {
+  async function fetchUsers() {
+      const res = await fetch(`${apiUrl}/users`);
+      const parsed = await res.json();
+      setTableData(parsed.map((ele:any, id:any) => ({
+          userId:ele._id,
+          id: id + 1,                         
+          name: ele.name,         
+          email: ele.email,
+          gender: ele.gender,
+          role: ele.role,
+        })));
+  }
+  fetchUsers();
+}, []);
+
 
   // react table
-  const table = useReactTable({
-    data,
-    columns,
-    pageCount: Math.ceil(data.length / pagination.pageSize),
-    state: {
-      pagination,
-    },
-    onPaginationChange: setPagination,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-  })
+const table = useReactTable({
+  data: tableData || [],
+  columns,
+  pageCount: Math.ceil((tableData?.length || 0) / pagination.pageSize),
+  state: {
+    pagination,
+  },
+  onPaginationChange: setPagination,
+  getCoreRowModel: getCoreRowModel(),
+  getPaginationRowModel: getPaginationRowModel(),
+});
 
   const handleEdit = (userId: string) => {
-    navigate(`/formresponses?formId=${userId}`)
-  }
-
-  function handleClick() {
-    navigate(`/createform`)
+    navigate(`/userforms?userId=${userId}`)
   }
 
   // delete form
@@ -114,32 +144,8 @@ export function DataTable<TData extends { formId: string }>({
     }
   }
 
-  function copyToClipboard(text: string) {
-    navigator.clipboard.writeText(`${siteUrl}/viewform?formId=${text}`)
-      .then(() => {
-        console.log('Text copied to clipboard:', text);
-        toast("URL Copied! ", {
-          position: "bottom-right",
-          autoClose: 1500,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: true,
-          style: {
-            backgroundColor: '#fff',
-            color: '#000',
-            fontSize: '16px',
-          }
-        })
-      })
-      .catch((err) => {
-        console.error('Failed to copy text: ', err);
-      });
-  }
-
   return (
     <div className="flex flex-col gap-4 items-end">
-      {isAdmin ? "" : <Button onClick={handleClick} className="w-fit">Create Form</Button>}
       <div className="overflow-x-auto w-full rounded-lg shadow-lg border border-gray-200">
         <Table className="min-w-full rounded-lg border-collapse">
           <TableHeader>
@@ -161,9 +167,6 @@ export function DataTable<TData extends { formId: string }>({
                   </TableHead>
                 ))}
                 <TableHead className="px-6 py-3 roundedtr-lg text-right">
-                  {/* Copy URL */}
-                </TableHead>
-                <TableHead className="px-6 py-3 roundedtr-lg text-right">
                   {/* Button */}
                 </TableHead>
               </TableRow>
@@ -180,7 +183,7 @@ export function DataTable<TData extends { formId: string }>({
                     <TableCell
                       key={cell.id}
                       className={`
-                      px-6 py-4 capitalize
+                      px-6 py-4 
                       text-gray-800
                       ${i === 0 ? "rounded-l-lg" : ""}
                       ${i === row.getVisibleCells().length - 1 ? "" : ""}
@@ -190,16 +193,7 @@ export function DataTable<TData extends { formId: string }>({
                     </TableCell>
                   ))}
 
-                  <TableCell className="text-right hover:bg-[#ececee] px-6 py-4">
-                    <Button
-                      onClick={() => copyToClipboard(row.original.formId)}
-                      className=" inline-block rounded-md bg-black px-3 py-1 text-sm font-medium text-white shadow-sm hover:bg-[#494848]"
-                    >
-                      <Copy />
-                    </Button>
-                  </TableCell>
-
-                  <TableCell className="hover:bg-[#ececee] text-right group-hover:rounded-r-lg  px-6 py-4 flex items-center justify-center">
+                  <TableCell className=" text-right group-hover:rounded-r-lg  px-6 py-4 flex items-center justify-center">
                     <Menubar className="bg-transparent border-none shadow-none">
                       <MenubarMenu>
                         <MenubarTrigger
@@ -209,10 +203,10 @@ export function DataTable<TData extends { formId: string }>({
                           <Ellipsis className="rotate-90" />
                         </MenubarTrigger>
                         <MenubarContent className="w-40">
-                          <MenubarItem onClick={() => handleEdit(row.original.formId)} className="flex justify-center">
-                            View Responses
+                          <MenubarItem onClick={() => handleEdit(row.original.userId)} className="flex justify-center">
+                            View Forms
                           </MenubarItem>
-                          <MenubarItem onClick={() => confirmDelete(row.original.formId)} className="hover:bg-red-400 flex justify-center">
+                          <MenubarItem onClick={() => confirmDelete(row.original.userId)} className="hover:bg-red-400 flex justify-center">
                             <div className="flex items-center gap-2">
                               <Delete size={16} />
                               <span>Delete Form</span>

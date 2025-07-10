@@ -63,7 +63,7 @@ export default function FormResponses() {
   const [loading, setLoading] = useState<boolean>(true)
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 3,
+    pageSize: 5,
   });
   function useQuery() {
     return new URLSearchParams(useLocation().search)
@@ -156,7 +156,7 @@ export default function FormResponses() {
   }
 
   return (
-    <div className="flex flex-col gap-8 py-10 md:px-20 sm:px-10 px-5">
+    <div className="flex flex-col gap-8 py-10 px-4 lg:px-6">
       {loading && <div className=" flex justify-center items-center h-screen"><img src={spinner} alt="" /></div>}
       {!loading && <><div className="flex flex-col gap-4">
         <h1 className="md:text-2xl sm:text-xl font-bold">

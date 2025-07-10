@@ -132,10 +132,11 @@ export default function EditFormResponse() {
                 <p><strong>Email: </strong>{Email}</p>
             </div>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-
+                    <h1 className="text-2xl font-bold">Fields:</h1>
+                    <div className="px-10 py-10 bg-white rounded-md border-l-12 border-[#101828] shadow-2xl grid sm:grid-cols-2 gap-10">
                     {FormData?.fields.map((ele: any, id: number) => (
-                        <div key={id} className="px-10 py-10 bg-white rounded-md border-l-12 border-[#101828] shadow-2xl">
-                            <label className="block mb-1">{ele.label}</label>
+                        <div key={id}>
+                            <label className="block mb-1 capitalize">{ele.label}</label>
 
                             {ele.type === "text" && (
                                 <input
@@ -224,8 +225,9 @@ export default function EditFormResponse() {
                             {(errors as any)[ele.label] && (
                                 <p className="text-red-500 mt-1">{`${ele.label} is required`}</p>
                             )}
+                            </div>
+                        ))}
                         </div>
-                    ))}
 
 
                     <button type="submit" className="bg-black hover:bg-[#111111] text-[white] px-4 py-2 rounded">

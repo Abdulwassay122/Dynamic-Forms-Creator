@@ -85,7 +85,7 @@ export default function Login({
         if (checkPass) {
           console.log('logined')
           setUserId(parExisUser[0]._id)
-          setUser({email:parExisUser[0].email, name:parExisUser[0].name})
+          setUser({email:parExisUser[0].email, name:parExisUser[0].name, role:parExisUser[0].role})
           console.log(parExisUser[0]._id)
           toast.success("Login Successful.")
           setLogined(true)
@@ -99,7 +99,7 @@ export default function Login({
         return 'error'
       }
     } catch (error: any) {
-      console.error(error.message)
+      console.error(error)
       toast.error("Error Loging in.")
     }
   }

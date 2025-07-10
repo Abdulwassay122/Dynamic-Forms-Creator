@@ -2,7 +2,7 @@ import './App.css'
 import Signup from './routes/Signip'
 import './index.css'
 import { AuthProvider } from './context/myContext'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import PrivateRoute from './PrivateRoute'
 import Login from './routes/Login'
 import Dashboard from './routes/DashBoard'
@@ -15,13 +15,42 @@ import EditFormResponse from './routes/EditFormResponse'
 import ViewAllResponses from './routes/ViewAllResponses'
 import SeeFormResponse from './routes/SeeFromResponse'
 import Thanks from './routes/Thanks'
-function App() {
-        const apiUrl = import.meta.env.VITE_API_URL;
-        console.log('API URL:', apiUrl);
+import {
+  SidebarInset,
+  SidebarProvider,
+} from "@/components/ui/sidebar"
+import { AppSidebar } from './components/app-sidebar'
+import { SiteHeader } from './components/site-header'
+import UserForms from './routes/UserForms'
+
+
+function LayoutWrapper() {
+  const location = useLocation();
+
+  // Routes where sidebar and header should be hidden
+  const excludedRoutes = [
+    "/createform",
+    "/thanks",
+    "/editformresponse",
+    "/seeformresponse",
+    "/viewform",
+    "/login",
+    "/"
+  ];
+
+  const shouldHideLayout = excludedRoutes.includes(location.pathname);
   return (
-    <>
-    <AuthProvider>
-      <BrowserRouter>
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        } as React.CSSProperties
+      }
+    >
+      {!shouldHideLayout && <AppSidebar />}
+      <SidebarInset>
+        {!shouldHideLayout && <SiteHeader />}
         <Routes>
           <Route path="/" element={<Signup />} />
           <Route path="/login" element={<Login />} />
@@ -29,56 +58,83 @@ function App() {
             path="/dashboard"
             element={
               <PrivateRoute>
-                <Dashboard/>
+                <Dashboard />
               </PrivateRoute>
             }
           />
           <Route
-            path="/editformresponse"
+            path="/userforms"
             element={
-                <EditFormResponse/>
-            }
-          />
-          <Route
-            path="/seeformresponse"
-            element={
-                <SeeFormResponse/>
-            }
-          />
-          <Route
-            path="/createform"
-            element={
-                <CreateForm/>
-            }
-          />
-          <Route
-            path="/viewform"
-            element={
-                <ViewForm/>
+              <PrivateRoute>
+                <UserForms />
+              </PrivateRoute>
             }
           />
           <Route
             path="/formresponses"
             element={
-                <FormResponses/>
+              <FormResponses />
             }
           />
           <Route
             path="/viewallforms"
             element={
-                <ViewAllResponses/>
+              <ViewAllResponses />
             }
           />
+          {/* j */}
+          <Route
+            path="/editformresponse"
+            element={
+              <EditFormResponse />
+            }
+          />
+          {/* j */}
+          <Route
+            path="/seeformresponse"
+            element={
+              <SeeFormResponse />
+            }
+          />
+          {/* j */}
+          <Route
+            path="/createform"
+            element={
+              <CreateForm />
+            }
+          />
+          {/* j */}
+          <Route
+            path="/viewform"
+            element={
+              <ViewForm />
+            }
+          />
+          {/* j */}
           <Route
             path="/thanks"
             element={
-                <Thanks/>
+              <Thanks />
             }
           />
         </Routes>
+      </SidebarInset>
+    </SidebarProvider>
+  )
+}
+
+
+function App() {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log('API URL:', apiUrl);
+  return (
+    <>
+      <BrowserRouter>
+        <AuthProvider>
+          <LayoutWrapper />
+        </AuthProvider>
       </BrowserRouter>
-    </AuthProvider>
-    <ToastContainer/>
+      <ToastContainer />
     </>
   )
 }

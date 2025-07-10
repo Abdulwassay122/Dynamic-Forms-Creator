@@ -113,7 +113,7 @@ export default function ViewAllResponses() {
     }
 
     return (
-        <div className="sm:px-10 sm:py-10 py-2 px-2 flex flex-col gap-10">
+        <div className="px-4 lg:px-6 sm:py-10 py-2  flex flex-col gap-10">
             <div className="relative flex items-center">
                 <Select
                     isMulti

@@ -75,23 +75,23 @@ export default function ViewForm() {
         try {
             const isExis = await fetch(`${apiUrl}/submitformbyemailandformid?email=${email}&formId=${formId}`)
             const parExis = await isExis.json()
-            console.log("Existing User",parExis)
-            if(parExis.forms && parExis.forms.length > 0){
+            console.log("Existing User", parExis)
+            if (parExis.forms && parExis.forms.length > 0) {
                 toast.error("Already Responded with this Email.", {
-                          position: "top-center",
-                          autoClose: 2000,
-                          hideProgressBar: true,
-                          closeOnClick: true,
-                          pauseOnHover: false,
-                          style: {
-                            backgroundColor: '#fff',
-                            color: '#000',
-                            fontSize: '16px',
-                          }
-                        })
+                    position: "top-center",
+                    autoClose: 2000,
+                    hideProgressBar: true,
+                    closeOnClick: true,
+                    pauseOnHover: false,
+                    style: {
+                        backgroundColor: '#fff',
+                        color: '#000',
+                        fontSize: '16px',
+                    }
+                })
                 return "Already Responded with this Email"
             }
-            
+
             const upload = await fetch(`${apiUrl}/submitform`, {
                 method: "POST",
                 headers: {
@@ -107,17 +107,17 @@ export default function ViewForm() {
             console.log(parsed)
             if (upload.status === 201) {
                 toast.success("Form Subbmitted Successfully.", {
-                          position: "top-center",
-                          autoClose: 2000,
-                          hideProgressBar: true,
-                          closeOnClick: true,
-                          pauseOnHover: false,
-                          style: {
-                            backgroundColor: '#fff',
-                            color: '#000',
-                            fontSize: '16px',
-                          }
-                        })
+                    position: "top-center",
+                    autoClose: 2000,
+                    hideProgressBar: true,
+                    closeOnClick: true,
+                    pauseOnHover: false,
+                    style: {
+                        backgroundColor: '#fff',
+                        color: '#000',
+                        fontSize: '16px',
+                    }
+                })
                 navigaate("/thanks")
                 reset()
             }
@@ -136,104 +136,107 @@ export default function ViewForm() {
                 <p className="capitalize">{FormData?.description}</p>
             </div>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="px-10 py-10 bg-white rounded-md border-l-12 border-[#101828] shadow-lg">
-                        <label className="block mb-1">Email  <span className="text-red-600">*</span></label>
-                        <input
-                            type="email"
-                            {...register("email", {
-                                required: true,
-                                pattern: {
-                                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                                    message: "Enter a valid email"
-                                }
-                            })}
-                            className="border px-3 py-2 rounded w-full"
-                        />
-                        {errors.email  && (
-                            <p className="text-red-500 mt-1">{`Email is required`}</p>
-                        )}
-                    </div>
-                    <div className="px-10 py-10 bg-white rounded-md border-l-12 border-[#101828] shadow-lg flex flex-col gap-10">
-                    {FormData?.fields.map((ele: any, id: number) => (
-                            <div className=""><label key={id} className="block mb-1 capitalize">{id+1}. {ele.label} <span className="text-red-600">*</span></label>
-
-                            {ele.type === "text" && (
-                                <input
-                                    type="text"
-                                    {...register(ele.id, { required: ele.required })}
-                                    className="border px-3 py-2 rounded w-full"
-                                />
+                    <h1 className="text-2xl font-bold">Fields:</h1>
+                    <div className="px-10 py-10 bg-white rounded-md border-l-12 border-[#101828] shadow-lg flex flex-col gap-5">
+                        <div>
+                            <label className="block mb-1">Email  <span className="text-red-600">*</span></label>
+                            <input
+                                type="email"
+                                {...register("email", {
+                                    required: true,
+                                    pattern: {
+                                        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                                        message: "Enter a valid email"
+                                    }
+                                })}
+                                className="border px-3 py-2 rounded w-full"
+                            />
+                            {errors.email && (
+                                <p className="text-red-500 mt-1">{`Email is required`}</p>
                             )}
-
-
-                            {ele.type === "number" && (
-                                <input
-                                    type="number"
-                                    {...register(ele.id, { required: ele.required })}
-                                    className="border px-3 py-2 rounded w-full"
-                                />
-                            )}
-
-                            {ele.type === "textarea" && (
-                                <textarea
-                                    {...register(ele.id, { required: ele.required })}
-                                    className="border px-3 py-2 rounded w-full"
-                                />
-                            )}
-
-                            {ele.type === "radio" && (
-                                <div className="flex gap-4">
-                                    {ele.options.map((option: string, idx: number) => (
-                                        <label key={idx} className="flex items-center">
-                                            <input
-                                                type="radio"
-                                                value={option}
-                                                {...register(ele.id, { required: ele.required })}
-                                                className="mr-2"
-                                            />
-                                            {option}
-                                        </label>
-                                    ))}
-                                </div>
-                            )}
-
-                            {ele.type === "select" && (
-                                <select
-                                    {...register(ele.id, { required: ele.required })}
-                                    className="border px-3 py-2 rounded w-full"
-                                    defaultValue=""
-                                >
-                                    <option value="" disabled>Select an option</option>
-                                    {ele.options.map((option: string, idx: number) => (
-                                        <option key={idx} value={option}>
-                                            {option}
-                                        </option>
-                                    ))}
-                                </select>
-                            )}
-
-                            {ele.type === "checkbox" && (
-                                <div className="flex flex-col gap-2">
-                                    {ele.options.map((option: string, idx: number) => (
-                                        <label key={idx} className="flex items-center">
-                                            <input
-                                                type="checkbox"
-                                                value={option}
-                                                {...register(ele.id)} // checkbox is optional unless you add validation
-                                                className="mr-2"
-                                            />
-                                            {option}
-                                        </label>
-                                    ))}
-                                </div>
-                            )}
-
-                            {(errors as any)[ele.id] && (
-                                <p className="text-red-500 mt-1"><span className="capitalize">{ele.label}</span> {` is required`}</p>
-                            )}
-                            </div>
-                        ))}
                         </div>
+                        <div className="grid sm:grid-cols-2 gap-10">
+                            {FormData?.fields.map((ele: any, id: number) => (
+                                <div className=""><label key={id} className="block mb-1 capitalize"> {ele.label} <span className="text-red-600">*</span></label>
+
+                                    {ele.type === "text" && (
+                                        <input
+                                            type="text"
+                                            {...register(ele.id, { required: ele.required })}
+                                            className="border px-3 py-2 rounded w-full"
+                                        />
+                                    )}
+
+
+                                    {ele.type === "number" && (
+                                        <input
+                                            type="number"
+                                            {...register(ele.id, { required: ele.required })}
+                                            className="border px-3 py-2 rounded w-full"
+                                        />
+                                    )}
+
+                                    {ele.type === "textarea" && (
+                                        <textarea
+                                            {...register(ele.id, { required: ele.required })}
+                                            className="border px-3 py-2 rounded w-full"
+                                        />
+                                    )}
+
+                                    {ele.type === "radio" && (
+                                        <div className="flex gap-4">
+                                            {ele.options.map((option: string, idx: number) => (
+                                                <label key={idx} className="flex items-center">
+                                                    <input
+                                                        type="radio"
+                                                        value={option}
+                                                        {...register(ele.id, { required: ele.required })}
+                                                        className="mr-2"
+                                                    />
+                                                    {option}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {ele.type === "select" && (
+                                        <select
+                                            {...register(ele.id, { required: ele.required })}
+                                            className="border px-3 py-2 rounded w-full"
+                                            defaultValue=""
+                                        >
+                                            <option value="" disabled>Select an option</option>
+                                            {ele.options.map((option: string, idx: number) => (
+                                                <option key={idx} value={option}>
+                                                    {option}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    )}
+
+                                    {ele.type === "checkbox" && (
+                                        <div className="flex flex-col gap-2">
+                                            {ele.options.map((option: string, idx: number) => (
+                                                <label key={idx} className="flex items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        value={option}
+                                                        {...register(ele.id)} // checkbox is optional unless you add validation
+                                                        className="mr-2"
+                                                    />
+                                                    {option}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {(errors as any)[ele.id] && (
+                                        <p className="text-red-500 mt-1"><span className="capitalize">{ele.label}</span> {` is required`}</p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
 
 
                     <button type="submit" className="bg-black hover:bg-[#111111] text-[white] px-4 py-2 rounded">

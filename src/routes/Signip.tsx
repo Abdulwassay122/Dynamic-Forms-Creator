@@ -124,11 +124,12 @@ export default function Signip({
           password: hasshedPassword
         })
       })
-
+      console.log("unpased user", user)
       if (user.status === 201) {
         const paarse = await user.json()
-        setUserId(paarse[0]?._id)
-        setUser({email:paarse[0].email, name:paarse[0].name})
+        console.log("parsed user", paarse)
+        setUserId(paarse?._id)
+        setUser({email:paarse.email, name:paarse.name})
         console.log('logined')
         toast.success("User Creaated successffully.")
         setLogined(true)
