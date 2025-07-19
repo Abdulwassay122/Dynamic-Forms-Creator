@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/table"
 import { Ellipsis } from 'lucide-react'
 import { useNavigate } from "react-router-dom"
-import { Button } from "./ui/button"
 import { toast } from 'react-toastify';
 import {
   Menubar,
@@ -77,34 +76,34 @@ export function AdminDataTable() {
   });
 
   useEffect(() => {
-  async function fetchUsers() {
+    async function fetchUsers() {
       const res = await fetch(`${apiUrl}/users`);
       const parsed = await res.json();
-      setTableData(parsed.map((ele:any, id:any) => ({
-          userId:ele._id,
-          id: id + 1,                         
-          name: ele.name,         
-          email: ele.email,
-          gender: ele.gender,
-          role: ele.role,
-        })));
-  }
-  fetchUsers();
-}, []);
+      setTableData(parsed.map((ele: any, id: any) => ({
+        userId: ele._id,
+        id: id + 1,
+        name: ele.name,
+        email: ele.email,
+        gender: ele.gender,
+        role: ele.role,
+      })));
+    }
+    fetchUsers();
+  }, []);
 
 
   // react table
-const table = useReactTable({
-  data: tableData || [],
-  columns,
-  pageCount: Math.ceil((tableData?.length || 0) / pagination.pageSize),
-  state: {
-    pagination,
-  },
-  onPaginationChange: setPagination,
-  getCoreRowModel: getCoreRowModel(),
-  getPaginationRowModel: getPaginationRowModel(),
-});
+  const table = useReactTable({
+    data: tableData || [],
+    columns,
+    pageCount: Math.ceil((tableData?.length || 0) / pagination.pageSize),
+    state: {
+      pagination,
+    },
+    onPaginationChange: setPagination,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+  });
 
   const handleEdit = (userId: string) => {
     navigate(`/userforms?userId=${userId}`)

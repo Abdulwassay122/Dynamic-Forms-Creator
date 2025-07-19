@@ -22,6 +22,7 @@ import {
 import { AppSidebar } from './components/app-sidebar'
 import { SiteHeader } from './components/site-header'
 import UserForms from './routes/UserForms'
+import {RouterBreadcrumb} from './components/BreadCrumb'
 
 
 function LayoutWrapper() {
@@ -41,16 +42,22 @@ function LayoutWrapper() {
   const shouldHideLayout = excludedRoutes.includes(location.pathname);
   return (
     <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
+    style={
+      {
+        "--sidebar-width": "calc(var(--spacing) * 72)",
+        "--header-height": "calc(var(--spacing) * 12)",
+      } as React.CSSProperties
+    }
     >
+
       {!shouldHideLayout && <AppSidebar />}
+
       <SidebarInset>
+
         {!shouldHideLayout && <SiteHeader />}
+
+        {!shouldHideLayout && <RouterBreadcrumb />}
+
         <Routes>
           <Route path="/" element={<Signup />} />
           <Route path="/login" element={<Login />} />

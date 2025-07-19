@@ -28,7 +28,7 @@ export default function UserForms() {
             const parsedRes = await res1.json()
             console.log("Table Data: ", parsedRes)
             setData(parsedRes.forms.map((ele: any, id: any) => ({
-                formId: ele._id,
+                formId: ele.id,
                 id: id + 1,
                 title: ele.title || "N/A",
                 description: ele.description || "N/A",
@@ -38,18 +38,33 @@ export default function UserForms() {
         fetchApi()
     }, [])
     return (
-        <div>
-            {Loading && <div className='h-screen flex justify-center items-center'><img src={spinner} /></div>}
-            {!Loading && <div className='py-10 px-4 lg:px-6 gap-5 flex flex-col'>
-                <div className='flex gap-4 flex-col'>
-                    <h1 className='text-xl font-semibold'>User Forms:</h1>
-                    <div className='text-[15px] flex gap-5'>
-                        <p className='capitalize'><strong>Name: </strong>{User.name}</p>
-                        <p><strong>Email: </strong>{User.email}</p>
+        <div className="px-4 lg:px-6 sm:py-10 py-10  flex flex-col gap-10">
+            {Loading ? (
+                <div className="h-screen flex justify-center items-center">
+                    <img src={spinner} alt="Loading..." className="w-16 h-auto" />
+                </div>
+            ) : (
+                <div className="flex flex-col gap-8">
+                    {/* User Info Header */}
+                    <div className="bg-gray-50 shadow-sm rounded-lg p-6 border border-gray-200">
+                        <h1 className="text-2xl font-bold text-gray-800 mb-4">User Forms</h1>
+                        <div className="text-gray-700 text-base flex  flex-wrap gap-6">
+                            <p className="capitalize">
+                                <span className="font-medium text-gray-900">Name:</span> {User.name}
+                            </p>
+                            <p>
+                                <span className="font-medium text-gray-900">Email:</span> {User.email}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Data Table */}
+                    <div className="">
+                        <DataTable data={data} columns={columns} />
                     </div>
                 </div>
-                <DataTable data={data} columns={columns} />
-            </div>}
+            )}
         </div>
+
     )
 }

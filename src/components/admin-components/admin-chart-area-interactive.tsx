@@ -29,7 +29,6 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/ui/toggle-group"
-import { AuthContext } from "@/context/myContext"
 
 export const description = "An interactive area chart"
 type VisitorData = {
@@ -51,72 +50,67 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export function ChartAreaInteractive() {
+export function AdminChartAreaInteractive() {
   const apiUrl = import.meta.env.VITE_API_URL;
-  const { userId } = React.useContext<any>(AuthContext)
+  // const { userId } = React.useContext<any>(AuthContext)
   const [chartData, setChartData] = React.useState<VisitorData[] | undefined>();
 
   const isMobile = useIsMobile()
   const [timeRange, setTimeRange] = React.useState("90d")
 
   React.useEffect(() => {
-    async function fetchApi() {
-      const dataRes = await fetch(`${apiUrl}/getformbyuserid?userId=${userId}`)
-      const parsedData = await dataRes.json();
-      const slicedForms = parsedData.forms.slice()
+  async function fetchApi() {
+    try {
+      const res = await fetch(`${apiUrl}/users`);
+      const users = await res.json();
+      // Exclude the User with Role Admin
+      const nonAdminUsers = users.filter((user: any) => user.role !== "admin");
+      const slicedUsers = nonAdminUsers.slice(); // take last 3 users
 
-      const responseCounts = await Promise.all(
-        slicedForms.map(async (form: any) => {
-          const res = await fetch(`${apiUrl}/submitform?formId=${form.id}`)
-          const resData = await res.json();
+      const userFormsData = await Promise.all(
+        slicedUsers.map(async (user: any) => {
+          const dataRes = await fetch(`${apiUrl}/getformbyuserid?userId=${user._id}`);
+          const forms = await dataRes.json();
           return {
-            formId: form.id,
-            title: form.title,
-            responses: resData.forms || []
-          }
+            userId: user._id,
+            name: user.name,
+            forms: forms.forms || [], // ensure array
+          };
         })
-      )
+      );
 
       const formDateMap: Record<string, Record<string, number>> = {};
 
-      responseCounts.forEach((formData) => {
-        const title = formData.title;
-        formData.responses.forEach((res: any) => {
-          const date = new Date(res.createdAt).toISOString().split("T")[0];
+      userFormsData.forEach(user => {
+        user.forms.forEach((form: any) => {
+          const date = new Date(form.createdAt).toISOString().split("T")[0];
           if (!formDateMap[date]) {
             formDateMap[date] = {};
           }
-          formDateMap[date][title] = (formDateMap[date][title] || 0) + 1;
+          formDateMap[date][user.name] = (formDateMap[date][user.name] || 0) + 1;
         });
       });
 
-      // Fill missing counts with 0
       const allDates = Object.keys(formDateMap).sort();
-      const formTitles = responseCounts.map(f => f.title);
+      const userNames = userFormsData.map(user => user.name);
 
-      const combinedChartData: VisitorData[] = allDates.map(date => {
+      const chartFormattedData: VisitorData[] = allDates.map(date => {
         const entry: VisitorData = { date };
-        formTitles.forEach(title => {
-          entry[title] = formDateMap[date][title] || 0;
+        userNames.forEach(name => {
+          entry[name] = formDateMap[date][name] || 0;
         });
         return entry;
       });
 
-      // const New = [
-      //   { date: "2025-07-01", "Trial": 0, "job application from": 5, "Test Form": 8 },
-      //   { date: "2025-07-02", "Trial": 2, "job application from": 7, "Test Form": 1 },
-      //   { date: "2025-07-03", "Trial": 3, "job application from": 4, "Test Form": 6 },
-      //   { date: "2025-07-04", "Trial": 2, "job application from": 2, "Test Form": 15 },
-      //   { date: "2025-07-05", "Trial": 6, "job application from": 6, "Test Form": 1 },
-      //   { date: "2025-07-09", "Trial": 7, "job application from": 3, "Test Form": 5 },
-
-      // ]
-      // setChartData(New);
-      setChartData(combinedChartData)
+      setChartData(chartFormattedData);
+    } catch (err) {
+      console.error("Error fetching or parsing form data", err);
     }
+  }
 
-    fetchApi();
-  }, []);
+  fetchApi();
+}, []);
+
 
 
   console.log("Chatt data ", chartData)
@@ -139,11 +133,11 @@ export function ChartAreaInteractive() {
     startDate.setDate(startDate.getDate() - daysToSubtract)
     return date >= startDate
   })
-  console.log("ChartDta ",chartData)
+  // console.log("ChartDta ", chartData)
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Total Responses</CardTitle>
+        <CardTitle>Total Forms Created By Users</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
             Total for the last 3 months

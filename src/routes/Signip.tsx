@@ -128,7 +128,7 @@ export default function Signip({
       if (user.status === 201) {
         const paarse = await user.json()
         console.log("parsed user", paarse)
-        setUserId(paarse?._id)
+        setUserId(paarse?.id)
         setUser({email:paarse.email, name:paarse.name})
         console.log('logined')
         toast.success("User Creaated successffully.")

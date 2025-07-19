@@ -2,7 +2,7 @@ import { ColumnDef } from "@tanstack/react-table"
 import { z } from "zod"
 
 export const schema = z.object({
-  _id: z.string(),
+  id: z.string(),
   formId: z.string(),
   title: z.string(),
   description: z.string(),

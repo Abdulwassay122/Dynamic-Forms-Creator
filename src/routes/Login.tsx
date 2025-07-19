@@ -84,9 +84,9 @@ export default function Login({
         const checkPass = await bcrypt.compare(info.password, parExisUser[0].password)
         if (checkPass) {
           console.log('logined')
-          setUserId(parExisUser[0]._id)
+          setUserId(parExisUser[0].id)
           setUser({email:parExisUser[0].email, name:parExisUser[0].name, role:parExisUser[0].role})
-          console.log(parExisUser[0]._id)
+          console.log(parExisUser[0].id)
           toast.success("Login Successful.")
           setLogined(true)
           navigate('/dashboard')

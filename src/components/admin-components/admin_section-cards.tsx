@@ -13,31 +13,24 @@ import { useContext, useEffect, useState } from "react"
 
 
 
-export function SectionCards() {
+export function AdminSectionCards() {
   const apiUrl = import.meta.env.VITE_API_URL;
   const { userId } = useContext<any>(AuthContext)
 
   const [data, setData] = useState<any>()
-  const [totalResponses, setTotalResponses] = useState<any>()
+  const [totalFroms, setTotalFroms] = useState<any>()
   useEffect(() => {
     async function fetchData() {
       try {
-        const dataRes = await fetch(`${apiUrl}/getformbyuserid?userId=${userId}`);
-        const parsedData = await dataRes.json();
-        setData(parsedData);
-
+        const res = await fetch(`${apiUrl}/users`);
+        const users = await res.json();
+        setData(users);
+        
         // Now that we have forms, calculate total responses directly
-        const forms = parsedData?.forms || [];
-
-        const responseCounts = await Promise.all(
-          forms.map(async (form: any) => {
-            const res = await fetch(`${apiUrl}/submitform?formId=${form.id}`);
-            const resData = await res.json();
-            return resData.forms?.length || 0;
-          })
-        );
-        const total = responseCounts.reduce((sum, count) => sum + count, 0);
-        setTotalResponses(total);
+        const res2 = await fetch(`${apiUrl}/getallforms`);
+        const forms = await res2.json();
+        console.log("Forms all", forms)
+        setTotalFroms(forms?.forms.length);
 
       } catch (err) {
         console.error("Error fetching data or responses:", err);
@@ -52,9 +45,9 @@ export function SectionCards() {
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-2">
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Total Forms</CardDescription>
+          <CardDescription>Total Users</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {data?.forms.length}
+            {data?.length}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
@@ -72,9 +65,9 @@ export function SectionCards() {
       </Card>
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Total Form Responses</CardDescription>
+          <CardDescription>Total Forms</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {totalResponses}
+            {totalFroms}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">

@@ -30,11 +30,11 @@ export default function EditForm() {
         return new URLSearchParams(useLocation().search)
     }
     const query = useQuery()
-    const _id = query.get("userId")
-    console.log("id",_id)
+    const id = query.get("userId")
+    console.log("id",id)
     useEffect(() => {
         async function countClick() {
-            const click = await fetch(`${apiUrl}/dashboard/from/id?_id=${_id}`)
+            const click = await fetch(`${apiUrl}/dashboard/from/id?id=${id}`)
             const parsedData = await click.json()
             setUserData(parsedData[0])
             console.log("clg pased",parsedData)
@@ -43,7 +43,7 @@ export default function EditForm() {
             return parsedData
         }
         countClick()
-    }, [_id, reset])
+    }, [id, reset])
 
 
     console.log("userrdtadysuklk",userData)

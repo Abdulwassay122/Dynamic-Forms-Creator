@@ -1,12 +1,26 @@
-import { useFieldArray, UseFormRegister, Control, useWatch, FieldErrors } from "react-hook-form";
+import { useFieldArray, UseFormRegister, Control, useWatch, FieldErrors, Controller } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Delete, PlusIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+
 type Option = { value: string };
 type Field = { label: string; type: string; options: Option[] };
 type FormValues = {
-    title: string;
-    description: string;
+  title: string;
+  description: string;
+  fields: Field[];
+  sections?: {
+    name: string;
+    description?: string;
     fields: Field[];
+  }[];
 };
 type FieldBlockProps = {
   index: number;
@@ -28,59 +42,108 @@ export default function FieldBlock({ index, control, register, remove, errors }:
   });
 
   return (
-    <div className="bg-white p-6 rounded-md border-l-12 border-[#101828] space-y-4 shadow-2xl">
+    <div className="flex flex-col gap-3">
       <h3 className="text-xl font-semibold">Field {index + 1}</h3>
 
       {/* Label */}
       <div>
-        <label>Label</label>
-        <input
-          {...register(`fields.${index}.label`, { required: "Label is required" })}
-          className="border px-3 py-2 rounded w-full"
+        {/* <label>Label</label> */}
+        <Controller
+          control={control}
+          name={`fields.${index}.label`}
+          rules={{ required: "Label is required" }}
+          render={({ field, fieldState }) => (
+            <div className="w-full">
+              <label className="block text-sm font-medium mb-1">Label</label>
+              <Input
+                {...field}
+                className="w-full"
+              />
+              {fieldState.error && (
+                <p className="text-sm text-red-500 mt-1">
+                  {fieldState.error.message}
+                </p>
+              )}
+            </div>
+          )}
         />
-        {errors.fields?.[index]?.label && <p className="text-red-500">{errors.fields?.[index]?.label.message}</p>}
       </div>
 
       {/* Type */}
-      <div>
-        <label>Type</label>
-        <select {...register(`fields.${index}.type`)} className="border px-3 py-2 rounded w-full">
-          <option value="text">Text</option>
-          <option value="number">Number</option>
-          <option value="textarea">Textarea</option>
-          <option value="select">Select</option>
-          <option value="radio">Radio</option>
-          <option value="checkbox">Checkbox</option>
-        </select>
-      </div>
+      <Controller
+        control={control}
+        name={`fields.${index}.type`}
+        rules={{ required: "Type is required" }}
+        render={({ field, fieldState }) => (
+          <div className="w-full">
+            <label className="block text-sm font-medium mb-1">Type</label>
+            <Select
+              value={field.value}
+              onValueChange={field.onChange}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="text">Text</SelectItem>
+                <SelectItem value="number">Number</SelectItem>
+                <SelectItem value="textarea">Textarea</SelectItem>
+                <SelectItem value="select">Select</SelectItem>
+                <SelectItem value="radio">Radio</SelectItem>
+                <SelectItem value="checkbox">Checkbox</SelectItem>
+                <SelectItem value="file">File</SelectItem>
+              </SelectContent>
+            </Select>
+            {fieldState.error && (
+              <p className="text-red-500 text-sm mt-1">{fieldState.error.message}</p>
+            )}
+          </div>
+        )}
+      />
 
       {/* Options */}
       {["radio", "select", "checkbox"].includes(type) && (
-        <div>
-          <label>Options</label>
+        <div className="mt-4 space-y-3">
+          <label className="text-sm font-medium">Options</label>
           {fields.map((opt, i) => (
-            <div key={opt.id} className="flex gap-2 items-center mb-2">
-              <input
-                {...register(`fields.${index}.options.${i}.value`)}
-                className="border px-3 py-2 rounded w-full"
+            <div key={opt.id} className="flex items-center gap-2">
+              <Controller
+                control={control}
+                name={`fields.${index}.options.${i}.value`}
+                render={({ field, fieldState }) => (
+                  <div className="w-full">
+                    <Input {...field} placeholder={`Option ${i + 1}`} />
+                    {fieldState.error && (
+                      <p className="text-red-500 text-xs mt-1">{fieldState.error.message}</p>
+                    )}
+                  </div>
+                )}
               />
-              <button type="button" onClick={() => removeOption(i)} className="text-red-500">
-                <Delete />
-              </button>
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                onClick={() => removeOption(i)}
+              >
+                <Delete className="w-4 h-4" />
+              </Button>
             </div>
           ))}
+
           <Button
             type="button"
             onClick={() => append({ value: "" })}
-            className="mt-2 flex w-fit text-white "
+            variant="secondary"
+            className="flex items-center gap-2"
           >
-            <PlusIcon /> Add Option
+            <PlusIcon className="w-4 h-4" />
+            Add Option
           </Button>
         </div>
       )}
 
-      <Button onClick={() => remove(index)}>
-        <Delete/>Remove Field
+      <Button className="w-fit" onClick={() => remove(index)}>
+        <Delete />Remove Field
       </Button>
     </div>
   );

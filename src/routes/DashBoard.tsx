@@ -7,7 +7,9 @@ import { useContext, useEffect, useState } from "react"
 import { columns, schema } from "@/components/coloumn"
 import { z } from "zod"
 import { AuthContext } from "@/context/myContext"
-import { AdminDataTable } from "@/components/admin-data-table"
+import { AdminDataTable } from "@/components/admin-components/admin-data-table"
+import { AdminChartAreaInteractive } from "@/components/admin-components/admin-chart-area-interactive"
+import { AdminSectionCards } from "@/components/admin-components/admin_section-cards"
 
 export default function Page() {
 const { userId } = useContext<any>(AuthContext)
@@ -24,7 +26,7 @@ const apiUrl = import.meta.env.VITE_API_URL;
         const parsedStats = await stats.json()
         console.log("Table Data: ",parsedStats)
         setData(parsedStats.forms.map((ele:any, id:any) => ({
-          formId:ele._id,
+          formId:ele.id,
           id: id + 1,                         
           title: ele.title || "N/A",         
           description: ele.description || "N/A",
@@ -37,9 +39,9 @@ const apiUrl = import.meta.env.VITE_API_URL;
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <SectionCards />
+              {isAdmin ? <AdminSectionCards/> : <SectionCards />}
               <div className="px-4 lg:px-6">
-                <ChartAreaInteractive />
+                {isAdmin ? <AdminChartAreaInteractive/> : <ChartAreaInteractive />}
               </div>
               <div className="px-4 lg:px-6">
               {isAdmin ? <AdminDataTable/> : <DataTable data={data} columns={columns} />}
