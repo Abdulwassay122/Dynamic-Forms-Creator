@@ -1,11 +1,9 @@
-import { useContext, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { useLocation } from "react-router-dom"
 import wrong from './wrong.png'
 import spinner from './Iphone-spinner-2 (2).gif'
-import { AuthContext } from "@/context/myContext"
 import { Button } from "@/components/ui/button"
-import EditFormResponseFields from "@/components/EditFormResponseFields"
 import { Label } from "@radix-ui/react-label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -21,7 +19,6 @@ import {
     RadioGroupItem,
 } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import SeeFormResponseFields from "@/components/SeeFormResponseFields"
 
 type FormValues = {
     name: string
@@ -45,15 +42,12 @@ type FieldData = {
 };
 
 export default function EditFormResponse() {
-    const { userId } = useContext<any>(AuthContext)
     const apiUrl = import.meta.env.VITE_API_URL;
     const [formData, setFormData] = useState<any>()
     const [loading, setLoading] = useState<boolean>(true)
     const [Email, setEmail] = useState<string>()
-    const [uploadedFilesMap, setUploadedFilesMap] = useState<Record<string, { label: string, link: string }>>({});
     const [formType, setFormType] = useState<string>()
     const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-    const [partialData, setPartialData] = useState<FieldData>();
 
 
     function useQuery() {
@@ -90,7 +84,6 @@ export default function EditFormResponse() {
                         };
                     }
                 });
-                setUploadedFilesMap(uploadedMap);
 
 
                 reset(defaultValues);
@@ -121,8 +114,6 @@ export default function EditFormResponse() {
                     sections: reconstructedSections
                 };
 
-                setPartialData(finalPartialData);
-
                 setLoading(false)
                 return
 
@@ -144,7 +135,6 @@ export default function EditFormResponse() {
     // console.log("formData", FormData)
 
     const {
-        register,
         formState: { errors },
         reset,
         control
@@ -168,32 +158,28 @@ export default function EditFormResponse() {
     console.log("Index", currentSectionIndex)
     return (
         <section className=" lg:px-60 md:px-20 sm:px-10 px-5 py-20 flex flex-col gap-10 bg-gray-100 bg-gradient-l-r from-gray-100 to-gray-200 ">
-            {loading && <div className="flex justify-center items-center h-screen"><img src={spinner} alt="" /></div>}
+            {loading &&  <div className="flex justify-center items-center h-screen"><img src={spinner} alt="" /></div>}
 
-            {formType === "fields"
-                ?
-                <SeeFormResponseFields />
-                : <>
                     {!loading && formData?.sections.length ? <div className="relative bg-white rounded-md shadow-lg"><div className="px-10 flex  flex-col gap-4 items-center">
                         <div className={`bg-gray-800 text-center text-white px-7 py-4 rounded-full absolute ${formData?.description.length > 0 ? "top-[-40px]" : "top-[-30px]"} `}>
                             <h1 className="text-xl font-semibold text-left capitalize">{formData?.title}</h1>
                             <p className="text-center text-[13px] capitalize">{formData?.description} THius is A Decsctieopfuuro</p>
                         </div>
-                        <div className="flex items-center pt-18 w-full justify-between">
+                        {formData?.sections.length > 1 && <div className="flex items-center pt-18 w-full justify-between">
                             {formData.sections.map((_: any, e: number) => (<>
                                 <div className={`rounded-full border-solid ${currentSectionIndex >= e ? 'border-gray-800' : 'border-gray-200'}  w-full border-2`}></div>
                                 <div onClick={() => setCurrentSectionIndex(e)} className={`cursor-pointer h-10 min-w-10 flex justify-center items-center rounded-[100%] text-white ${currentSectionIndex >= e ? "bg-gray-800" : "bg-gray-200"} `}>{e + 1}</div>
                                 <div className={`rounded-full border-solid ${currentSectionIndex >= e ? 'border-gray-800' : 'border-gray-200'}  w-full border-2`}></div>
                             </>))}
-                        </div>
+                        </div>}
                     </div>
                         <form  className="space-y-6">
                             {/* <h1 className="text-2xl font-bold">Fields:</h1> */}
 
 
-                            {formData?.sections.length > 0 && (<div className=" pb-10 pt-5 flex flex-col gap-5 ">
+                            {formData?.sections.length > 0 && (<div className={`pb-5  flex flex-col gap-5 ${formData?.sections.length > 1?"pt-5":"pt-10"}`}>
                                 <div className="flex flex-col items-center gap-3">
-                                    <div className="text-xl font-semibold text-white bg-gray-800 h-12 w-full flex justify-center items-center">Step - {currentSectionIndex + 1}</div>
+                                   {formData?.sections.length > 1 && <div className="text-xl font-semibold text-white bg-gray-800 h-12 w-full flex justify-center items-center">Step - {currentSectionIndex + 1}</div>}
                                     <div >
                                         <h1 className="text-xl text-center font-semibold  capitalize">{formData.sections[currentSectionIndex]?.name}</h1>
                                         <p className="capitalize text-[13px] text-center text-sm">{formData.sections[currentSectionIndex]?.description} this is the description</p>
@@ -203,9 +189,9 @@ export default function EditFormResponse() {
                                     <label className="block mb-1  font-semibold">Email: {` `}</label>
                                     <p>{` ${Email}`}</p>
                                 </div>}
-                                <div className="grid sm:grid-cols-2 gap-10 px-10">
+                                <div className="grid sm:grid-cols-2 gap-5 px-10">
                                     {formData.sections[currentSectionIndex]?.fields.map((ele: any, id: number) => (
-                                        <div className=""><Label key={id} className="block mb-1 capitalize text-[15px]"> {ele.label} <span className="text-red-600">*</span></Label>
+                                        <div className=""><Label key={id} className="block mb-1 capitalize text-sm"> {ele.label} <span className="text-red-600">*</span></Label>
                                             {ele.type === "text" && (
                                                 <Controller
                                                     name={ele.id}
@@ -385,7 +371,6 @@ export default function EditFormResponse() {
                                 </div>
                             </div>
                         </form></div> : <div className="text-xl font-semibold flex items-center justify-center text-center flex-col gap-3 h-screen"><img src={wrong} className="h-auto w-[60px]" />Oops! <br />Something Went Wrong.</div>}
-                </>}
         </section>
     )
 }

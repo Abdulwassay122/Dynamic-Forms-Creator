@@ -83,7 +83,7 @@ export function AdminViewAllUsers() {
             const res = await fetch(`${apiUrl}/users`);
             const parsed = await res.json();
             setTableData(parsed.map((ele: any, id: any) => ({
-                userId: ele._id,
+                userId: ele.id,
                 id: id + 1,
                 name: ele.name,
                 email: ele.email,

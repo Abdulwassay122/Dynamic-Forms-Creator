@@ -69,10 +69,10 @@ export function AdminChartAreaInteractive() {
 
       const userFormsData = await Promise.all(
         slicedUsers.map(async (user: any) => {
-          const dataRes = await fetch(`${apiUrl}/getformbyuserid?userId=${user._id}`);
+          const dataRes = await fetch(`${apiUrl}/getformbyuserid?userId=${user.id}`);
           const forms = await dataRes.json();
           return {
-            userId: user._id,
+            userId: user.id,
             name: user.name,
             forms: forms.forms || [], // ensure array
           };

@@ -1,25 +1,22 @@
 import { useForm, useFieldArray } from "react-hook-form";
 import { PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import FieldBlock from "./FieldBlock"; // import your child component
 import { useNavigate } from "react-router-dom";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { AuthContext } from "@/context/myContext";
 import SectionBlock from "./SectionBlocks";
-import { Label } from "recharts";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-    Select,
-    SelectTrigger,
-    SelectValue,
-    SelectContent,
-    SelectItem,
-} from "@/components/ui/select";
 import { Controller } from "react-hook-form";
+import {
+    DragDropContext,
+    Droppable,
+    Draggable,
+    DropResult,
+} from "react-beautiful-dnd";
+import { GripVertical } from "lucide-react";
 
 type Option = { value: string };
-type Field = { label: string; type: string; options: Option[] };
+type Field = { label: string; type: string; length: "half" | "full"; options: Option[] };
 type Section = {
     id: string;
     name: string;
@@ -32,14 +29,10 @@ type FormValues = {
     fields?: Field[];
     sections?: Section[];
 };
-enum FormType {
-    Fields = "fields",
-    Sections = "sections"
-}
+
 export default function CreateForm() {
     const navigate = useNavigate()
     const { userId } = useContext<any>(AuthContext)
-    const [formType, setFormType] = useState<FormType>(FormType.Fields)
     const apiUrl = import.meta.env.VITE_API_URL;
     const {
         register,
@@ -50,13 +43,6 @@ export default function CreateForm() {
         defaultValues: {
             title: "",
             description: "",
-            fields: [
-                {
-                    label: "",
-                    type: "text",
-                    options: [{ value: "" }, { value: "" }],
-                },
-            ],
             sections: [
                 {
                     id: crypto.randomUUID(), // or use a simple string if crypto not available
@@ -66,6 +52,7 @@ export default function CreateForm() {
                         {
                             label: "",
                             type: "text",
+                            length: "half",
                             options: [{ value: "" }, { value: "" }],
                         },
                     ],
@@ -74,18 +61,23 @@ export default function CreateForm() {
         },
     });
 
-    const { fields, append, remove } = useFieldArray({
-        control,
-        name: "fields",
-    });
     const {
         fields: sectionFields,
         append: appendSection,
         remove: removeSection,
+        move: moveSection,
     } = useFieldArray({
         control,
         name: "sections",
     });
+
+    const onDragEnd = (result: DropResult) => {
+        const { source, destination } = result;
+        if (!destination) return;
+        if (source.index !== destination.index) {
+            moveSection(source.index, destination.index);
+        }
+    };
 
     const onSubmit = (data: FormValues) => {
         const cleanFields = (fields: Field[], context: string = "form") => {
@@ -115,49 +107,36 @@ export default function CreateForm() {
             userId: userId,
             title: data.title,
             description: data.description,
-            fields: [],
             sections: []
         };
 
-        if (formType === FormType.Fields) {
-            // Handle fields-based form
-            if (!data.fields || data.fields.length === 0) {
-                alert("At least one field is required.");
-                return;
-            }
-
-            const cleanedFields = cleanFields(data.fields);
-            cleanedData.fields = cleanedFields;
-            cleanedData.sections = []; // Empty array for sections
-
-        } else if (formType === FormType.Sections) {
-            // Handle sections-based form
-            if (!data.sections || data.sections.length === 0) {
-                alert("At least one section is required.");
-                return;
-            }
-
-            const cleanedSections = data.sections.map((section, sectionIndex) => {
-                const sectionId = `section_${sectionIndex + 1}`;
-
-                if (!section.fields || section.fields.length === 0) {
-                    alert(`Section ${sectionIndex + 1} must have at least one field.`);
-                    throw new Error(`Section ${sectionIndex + 1} has no fields.`);
-                }
-
-                const cleanedFields = cleanFields(section.fields, `Section ${sectionIndex + 1}`);
-
-                return {
-                    id: sectionId,
-                    name: section.name,
-                    description: section.description || "",
-                    fields: cleanedFields
-                };
-            });
-
-            cleanedData.sections = cleanedSections;
-            cleanedData.fields = []; // Empty array for fields
+        // Handle sections-based form
+        if (!data.sections || data.sections.length === 0) {
+            alert("At least one section is required.");
+            return;
         }
+
+        const cleanedSections = data.sections.map((section, sectionIndex) => {
+            const sectionId = `section_${sectionIndex + 1}`;
+
+            if (!section.fields || section.fields.length === 0) {
+                alert(`Section ${sectionIndex + 1} must have at least one field.`);
+                throw new Error(`Section ${sectionIndex + 1} has no fields.`);
+            }
+
+            const cleanedFields = cleanFields(section.fields, `Section ${sectionIndex + 1}`);
+
+            return {
+                id: sectionId,
+                name: section.name,
+                description: section.description || "",
+                fields: cleanedFields
+            };
+        });
+
+        cleanedData.sections = cleanedSections;
+        cleanedData.fields = []; // Empty array for fields
+
 
         console.log("Form Submitted:", data);
         console.log("Cleaned Data to Submit:", cleanedData);
@@ -190,110 +169,103 @@ export default function CreateForm() {
         fetchApi();
     };
 
-    useEffect(() => {
-        console.log("From Type:", formType)
-    }, [formType])
     return (
-        <section className=" px-4 sm:px-8 md:px-16 lg:px-32 py-16 bg-gray-50">
+        <section className=" px-4 sm:px-8 md:px-16 lg:px-32 py-16 bg-gray-50 min-h-screen">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-                <div className="bg-white shadow-lg rounded-xl p-8 space-y-8">
+                <div className="bg-white shadow-lg rounded-xl p-8 flex flex-col gap-2">
                     <h1 className="text-3xl font-bold text-gray-800">Create a New Form</h1>
+                    <div className="flex gap-4 sm:flex-row flex-col">
+                        {/* Title */}
+                        <div className="w-full">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Form Title <span className="text-red-600">*</span>
+                            </label>
+                            <Controller
+                                name="title"
+                                control={control}
+                                rules={{ required: "Title is required" }}
+                                render={({ field, fieldState }) => (
+                                    <div className="space-y-1">
+                                        <Input
+                                            {...field}
+                                            placeholder="Enter Form Title"
+                                        />
+                                        {fieldState.error && (
+                                            <p className="text-sm text-red-500">{fieldState.error.message}</p>
+                                        )}
+                                    </div>
+                                )}
+                            />
+                        </div>
 
-                    {/* Title */}
-                    <div>
-                        <Label className="block text-sm font-medium text-gray-700 mb-1">
-                            Form Title <span className="text-red-600">*</span>
-                        </Label>
-                        <Controller
-                            name="title"
-                            control={control}
-                            rules={{ required: "Title is required" }}
-                            render={({ field, fieldState }) => (
-                                <div className="space-y-1">
-                                    <Input
-                                        {...field}
-                                        placeholder="Enter Form Title"
-                                    />
-                                    {fieldState.error && (
+                        {/* Description */}
+                        <div className="w-full">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Form Description
+                            </label>
+                            <Controller
+                                name="description"
+                                control={control}
+
+                                render={({ field }) => (
+                                    <div className="space-y-1">
+                                        <Input
+                                            {...field}
+                                            placeholder="Enter Form Description"
+                                        />
+                                        {/* {fieldState.error && (
                                         <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                                    )}
-                                </div>
-                            )}
-                        />
-                        {/* {errors.title && (
-                            <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
-                        )} */}
-                    </div>
-
-                    {/* Description */}
-                    <div>
-                        <Label className="block text-sm font-medium text-gray-700 mb-1">
-                            Form Description
-                        </Label>
-                        <Controller
-                            name="description"
-                            control={control}
-                            rules={{ required: "Description is required" }}
-                            render={({ field, fieldState }) => (
-                                <div className="space-y-1">
-                                    <Input
-                                        {...field}
-                                        placeholder="Enter Form Description"
-                                    />
-                                    {fieldState.error && (
-                                        <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                                    )}
-                                </div>
-                            )}
-                        />
-                        {/* {errors.description && (
-                            <p className="text-sm text-red-500 mt-1">{errors.description.message}</p>
-                        )} */}
-                    </div>
-
-                    {/* Form Type */}
-                    <div className="w-fit">
-                        <Label className="block text-sm font-medium text-gray-700 mb-1">
-                            Form Type
-                        </Label>
-                        <Select value={formType} onValueChange={(value) => setFormType(value as FormType)}>
-                            <SelectTrigger className="w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                                <SelectValue placeholder="Select form type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="fields">Fields</SelectItem>
-                                <SelectItem value="sections">Sections</SelectItem>
-                            </SelectContent>
-                        </Select>
+                                    )} */}
+                                    </div>
+                                )}
+                            />
+                        </div>
                     </div>
                 </div>
 
-                {/* Fields or Sections Rendering */}
-                <div className="bg-white shadow-md rounded-xl p-6 space-y-6">
-                    {formType === FormType.Fields &&
-                        fields.map((field, index) => (
-                            <FieldBlock
-                                key={field.id}
-                                control={control}
-                                register={register}
-                                index={index}
-                                remove={remove}
-                                errors={errors}
-                            />
-                        ))}
-
-                    {formType === FormType.Sections &&
-                        sectionFields.map((section, index) => (
-                            <SectionBlock
-                                key={section.id}
-                                sectionIndex={index}
-                                control={control}
-                                register={register}
-                                remove={removeSection}
-                                errors={errors}
-                            />
-                        ))}
-                </div>
+                {/* Sections Rendering */}
+                <DragDropContext onDragEnd={onDragEnd}>
+                    <Droppable droppableId="sections" key={sectionFields.length}>
+                        {(provided) => (
+                            <div
+                                className="bg-white shadow-md rounded-xl sm:px-6 px-2 space-y-6"
+                                {...provided.droppableProps}
+                                ref={provided.innerRef}
+                            >
+                                {sectionFields.map((section, index) => (
+                                    <Draggable
+                                        key={section.id}
+                                        draggableId={section.id}
+                                        index={index}
+                                    >
+                                        {(provided) => (
+                                            <div
+                                                ref={provided.innerRef}
+                                                {...provided.draggableProps}
+                                                className="relative"
+                                            >
+                                                <div
+                                                    {...provided.dragHandleProps}
+                                                    className="absolute -left-0 top-[29px] cursor-grab"
+                                                >
+                                                    <GripVertical size={20}/>
+                                                </div>
+                                                <SectionBlock
+                                                    sectionIndex={index}
+                                                    control={control}
+                                                    register={register}
+                                                    remove={removeSection}
+                                                    errors={errors}
+                                                />
+                                            </div>
+                                        )}
+                                    </Draggable>
+                                ))}
+                                {provided.placeholder}
+                            </div>
+                        )}
+                    </Droppable>
+                </DragDropContext>
 
                 {/* Footer Action Buttons */}
                 <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
@@ -301,38 +273,23 @@ export default function CreateForm() {
                         Create Form
                     </Button>
 
-                    {formType === "fields" && (
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() =>
-                                append({ label: "", type: "text", options: [{ value: "" }] })
-                            }
-                            className="w-full sm:w-auto"
-                        >
-                            <PlusIcon className="mr-2 h-4 w-4" />
-                            Add Field
-                        </Button>
-                    )}
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                            appendSection({
+                                id: `section_${sectionFields.length + 1}`,
+                                name: "",
+                                description: "",
+                                fields: [{ label: "", type: "text", length: "half", options: [{ value: "" }] }],
+                            })
+                        }
+                        className="w-full sm:w-auto"
+                    >
+                        <PlusIcon className="mr-2 h-4 w-4" />
+                        Add Section
+                    </Button>
 
-                    {formType === "sections" && (
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() =>
-                                appendSection({
-                                    id: `section_${sectionFields.length + 1}`,
-                                    name: "",
-                                    description: "",
-                                    fields: [{ label: "", type: "text", options: [{ value: "" }] }],
-                                })
-                            }
-                            className="w-full sm:w-auto"
-                        >
-                            <PlusIcon className="mr-2 h-4 w-4" />
-                            Add Section
-                        </Button>
-                    )}
                 </div>
             </form>
         </section>

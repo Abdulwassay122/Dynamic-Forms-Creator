@@ -140,3 +140,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+html,
+body,
+#__next {
+  height: 100%;
+}
+
+[data-rbd-droppable-context-id] {
+  min-height: 1px;
+}

@@ -80,7 +80,7 @@ export function AdminDataTable() {
       const res = await fetch(`${apiUrl}/users`);
       const parsed = await res.json();
       setTableData(parsed.map((ele: any, id: any) => ({
-        userId: ele._id,
+        userId: ele.id,
         id: id + 1,
         name: ele.name,
         email: ele.email,
@@ -112,7 +112,7 @@ export function AdminDataTable() {
   // delete form
   const handleDelete = async (formId: string) => {
     try {
-      const res = await fetch(`${apiUrl}/deleteform/${formId}`, {
+      const res = await fetch(`${apiUrl}/deleteuserbyid?id=${formId}`, {
         method: "DELETE",
       });
 
@@ -124,7 +124,7 @@ export function AdminDataTable() {
 
       console.log("Deleted:", data.message);
       navigate("/dashboard")
-      toast("Form Deleted Successfully!", {
+      toast("User Deleted Successfully!", {
         position: "bottom-right",
         autoClose: 1500,
         hideProgressBar: true,
